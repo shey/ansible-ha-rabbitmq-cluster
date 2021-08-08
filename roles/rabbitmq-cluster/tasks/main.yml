@@ -1,0 +1,74 @@
+- name: rabbitmq_clustering | ensure rabbits are stopped
+  service:
+    name: rabbitmq-server
+    state: stopped
+
+- name: rabbitmq_clustering | copy erlang cookie
+  template:
+    src: erlang.cookie.j2
+    dest: /var/lib/rabbitmq/.erlang.cookie
+    owner: rabbitmq
+    group: rabbitmq
+    mode: 0400
+    backup: yes
+  no_log: True
+
+- name: rabbitmq_clustering | restarting rabbitmq-server to pick up new cookie
+  service:
+    name: rabbitmq-server
+    state: started
+
+# the following 3 commands run on the secondary nodes only
+- name: rabbitmq_clustering | stopping rabbitmq app
+  command: rabbitmqctl stop_app
+  when: inventory_hostname != "{{ rabbitmq_primary }}"
+
+- name: rabbitmq_clustering | resetting rabbitmq app
+  command: rabbitmqctl reset
+  when: inventory_hostname != "{{ rabbitmq_primary }}"
+
+- name: rabbitmq_clustering | start rabbitmq app
+  command: rabbitmqctl start_app
+  when: inventory_hostname != "{{ rabbitmq_primary }}"
+
+# The following commands run on the primary node
+- name: rabbitmq_clustering | stopping rabbitmq app
+  command: rabbitmqctl stop_app
+  when: inventory_hostname == "{{ rabbitmq_primary }}"
+
+  # resetting the app destroys user access
+- name: rabbitmq_clustering | resetting rabbitmq app
+  command: rabbitmqctl reset
+  when: inventory_hostname == "{{ rabbitmq_primary }}"
+
+# while the playbook uses the primary/secondary nomenclature
+# it doesn't matter which node joins the cluster first or second...
+# we only have two nodes in this cluster. If there were more,
+# then ideally, we'd tell every secondary node to join the primary
+
+- name: rabbitmq_clustering | joining rabbitmq cluster
+  command: rabbitmqctl join_cluster 'rabbit@{{ rabbitmq_secondary }}'
+  register: cluster_joined
+  when: inventory_hostname == "{{ rabbitmq_primary }}"
+
+- name: rabbitmq_clustering | start rabbitmq app
+  command: rabbitmqctl start_app
+  when: inventory_hostname == "{{ rabbitmq_primary }}"
+
+- name: rabbitmq_clustering | all the queues
+  command: rabbitmqctl set_policy ha-all "" '{"ha-mode":"all","ha-sync-mode":"automatic"}'
+  when: inventory_hostname == "{{ rabbitmq_primary }}"
+
+- name: add rabbitmq user
+  rabbitmq_user:
+    user: "{{ rabbitmq_user }}"
+    password: "{{ rabbitmq_password }}"
+    tags: administrator,"{{ rabbitmq_user }}"
+    vhost: /
+    configure_priv: .*
+    write_priv: .*
+    read_priv: .*
+    state: present
+  ignore_errors: yes
+  tags:
+    - rabbitmq-users

@@ -1,0 +1,29 @@
+- name: Install NTP
+  apt: name=ntp state=latest
+  tags:
+    - timezone
+
+- name: Enable NTP
+  service: name=ntp state=started enabled=yes
+  tags:
+    - timezone
+
+- name: Set timezone variables
+  copy: content='Etc/UTC'
+        dest=/etc/timezone
+        owner=root
+        group=root
+        mode=0644
+        backup=yes
+  tags:
+    - timezone
+
+- name: Update tzdata
+  command: dpkg-reconfigure --frontend noninteractive tzdata
+  tags:
+    - timezone
+
+- name: show date
+  shell: date
+  tags:
+    - timezone

@@ -1,0 +1,8 @@
+- name: Build loadbalancer
+  hosts: loadbalancer
+  become: yes
+  roles:
+    - { role: hostname, tags: ['hostname'] }
+    - { role: base, tags: ['base'] }
+    - { role: haproxy, tags: ['haproxy'] }
+    - { role: logging, tags: ['logging'] }

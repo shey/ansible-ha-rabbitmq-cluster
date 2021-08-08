@@ -1,0 +1,55 @@
+# {{ ansible_managed }}
+
+global
+    chroot    /var/lib/haproxy
+    daemon
+    user      haproxy
+    group     haproxy
+    log       127.0.0.1   local0
+    maxconn   10000`
+    tune.bufsize  128000
+    ulimit-n  65536
+    pidfile   /var/run/haproxy.pid
+    stats socket /var/run/haproxy/admin.sock mode 660 level admin expose-fd listeners
+    nbproc    1
+    log-send-hostname
+
+defaults
+    mode                    http
+    log                     global
+    option                  tcplog
+    option                  dontlognull
+    option http-server-close
+    option                  redispatch
+    retries                 3
+    timeout client          24d
+    timeout server          24d
+    timeout connect         5000
+
+listen rabbitmq
+    bind    {{external_ip}}:5672
+    mode    tcp
+    option  tcpka
+    maxconn 8000
+    balance roundrobin
+            {% for host in groups['rabbits'] %}
+server {{ hostvars[host]['inventory_hostname'] }} {{ hostvars[host]['external_ip'] }}:5672 check inter 3s rise 2 fall 3 on-marked-down shutdown-sessions
+        {% endfor %}
+
+
+listen stats
+    bind :8080
+    mode http
+    stats enable
+    stats hide-version
+    stats uri /stats
+    stats realm HAProxy\ Statistics
+    stats auth {{haproxy_stats_user}}:{{haproxy_stats_password}}
+    log global
+    maxconn 10
+    timeout client 100s
+    timeout server 100s
+    timeout connect 100s
+    timeout queue 100s
+    stats refresh 30s
+    stats show-node

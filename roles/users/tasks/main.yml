@@ -1,0 +1,40 @@
+- name: generate password for user
+  shell: makepasswd --chars=64
+  register: user_password
+  tags: users
+  no_log: True
+
+- name: create a user
+  user: name={{username}}
+          createhome=yes
+          shell=/bin/bash
+          password={{user_password.stdout}}
+          state=present
+  tags: users
+
+- name: Update bashrc for bash history
+  blockinfile:
+    dest: /home/{{username}}/.bashrc
+    owner: "{{username}}"
+    group: "{{username}}"
+    state: present
+    insertafter: EOF
+    content: |
+      bind '"\e[A"':history-search-backward
+      bind '"\e[B"':history-search-forward
+  tags: users
+
+
+- name: create ssh directory for user -> {{username}}
+  become_user: "{{ username }}"
+  file: path=~/.ssh
+        owner={{ username }} group={{ username }}
+        mode=0700 state=directory
+  tags: users
+
+- name: add ssh keys for user -> {{username}}
+  template: src=authorized_keys.j2
+            dest=/home/{{username}}/.ssh/authorized_keys
+            owner={{username}} group={{username}}
+            mode=0600
+  tags: users

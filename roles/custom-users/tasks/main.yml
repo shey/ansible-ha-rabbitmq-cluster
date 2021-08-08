@@ -1,0 +1,8 @@
+- name: create system users
+  include_role:
+    name: users
+  with_items:
+    - deployer
+    - ubuntu
+  loop_control:
+    loop_var: username

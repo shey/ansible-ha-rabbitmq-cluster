@@ -1,0 +1,3 @@
+- name: ensure the rsyslog service is running
+  service: name=rsyslog state=restarted enabled=yes
+  tags: rsyslog-config

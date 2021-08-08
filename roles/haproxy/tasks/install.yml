@@ -1,0 +1,10 @@
+- name: remove irq balance for haproxy
+  apt:
+    name: irqbalance
+    state: absent
+    purge: yes
+
+- name: install haproxy and friends
+  apt:
+    name: ['haproxy']
+    state: latest

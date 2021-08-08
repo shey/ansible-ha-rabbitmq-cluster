@@ -1,0 +1,9 @@
+- name: Build RabbitMQ servers
+  hosts: rabbits
+  strategy: free
+  become: yes
+  roles:
+    - { role: hostname, tags: ['hostname'] }
+    - { role: base, tags: ['base'] }
+    - { role: swap, tags: ['swap'] }
+    - { role: rabbitmq, tags: ['rabbitmq'] }

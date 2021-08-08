@@ -1,0 +1,14 @@
+rabbitproxy     ansible_user=vagrant ansible_host=192.168.114.101 external_ip=192.168.114.101
+rabbit1         ansible_user=vagrant ansible_host=192.168.114.102 external_ip=192.168.114.102
+rabbit2         ansible_user=vagrant ansible_host=192.168.114.103 external_ip=192.168.114.103
+
+[loadbalancer]
+rabbitproxy
+
+[rabbits]
+rabbit1
+rabbit2
+
+[vagrant:children]
+rabbits
+loadbalancer

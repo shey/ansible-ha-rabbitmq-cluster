@@ -1,0 +1,38 @@
+- name: install rabbitmq
+  apt:
+    pkg: rabbitmq-server
+    state: latest
+    update_cache: yes
+
+- name: enable rabbitmq plugins
+  rabbitmq_plugin:
+    names: rabbitmq_management,rabbitmq_tracing,rabbitmq_federation
+    state: enabled
+  become: yes
+  become_user: rabbitmq
+
+- name: ensure rabbitmq vhost / is present
+  rabbitmq_vhost:
+    name: /
+    state: present
+
+- name: stop rabbitmq
+  service:
+    name: rabbitmq-server
+    state: stopped
+  tags: ['rabbitmq-config', 'service-config']
+
+- name: bind rabbitmq to the external ip
+  template:
+    src:  rabbitmq.conf.j2
+    dest: /etc/rabbitmq/rabbitmq.conf
+    mode: 0600
+    owner: rabbitmq
+    group: rabbitmq
+  tags: ['rabbitmq-config', 'service-config']
+
+- name: restart rabbitmq
+  service:
+    name: rabbitmq-server
+    state: started
+  tags: ['rabbitmq-config', 'service-config']

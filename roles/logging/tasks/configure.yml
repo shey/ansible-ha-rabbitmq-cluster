@@ -1,0 +1,19 @@
+- name: Add syslog root config
+  template: src=rsyslog.conf.j2
+            dest=/etc/rsyslog.conf
+            mode=0600
+            owner=root group=root
+  tags: rsyslog-config
+
+- name: change syslog defaults config
+  template: src=50-default.conf.j2
+            dest=/etc/rsyslog.d/50-default.conf
+            mode=0600
+            owner=root group=root
+  tags: rsyslog-config
+
+- name: Add logrotate config
+  template: src=logrotate.haproxy.j2
+            dest=/etc/logrotate.d/haproxy
+            mode=0600
+  tags: rsyslog-config

@@ -1,0 +1,5 @@
+- name: Build Single Rabbit Instance
+  hosts: rabbits
+  become: yes
+  roles:
+    - { role: rabbitmq-cluster, tags: ['cluster'] }

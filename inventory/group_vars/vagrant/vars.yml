@@ -1,0 +1,13 @@
+rabbitmq_user: bugs
+rabbitmq_password: "{{ vault_rabbitmq_password }}"
+
+# manually choose which rabbitmq server is the primary
+rabbitmq_primary: rabbit1
+rabbitmq_secondary: rabbit2
+
+# to avoid programmatic complexity, choose a erlang cookie upfront
+erlang_cookie: "{{ vault_erlang_cookie }}"
+
+# haproxy
+haproxy_stats_user: "haproxy"
+haproxy_stats_password: "{{ vault_haproxy_stats_password }}"

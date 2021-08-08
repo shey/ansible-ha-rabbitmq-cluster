@@ -1,0 +1,14 @@
+- name: Add new haproxy root configuration
+  template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+    backup: yes
+  tags: haproxy-config
+
+
+- name: ensure haproxy is running
+  service:
+    name: haproxy
+    state: reloaded
+    enabled: yes
+  tags: haproxy-config

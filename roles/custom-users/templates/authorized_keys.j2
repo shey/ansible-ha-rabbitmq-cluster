@@ -1,0 +1,6 @@
+# {{ ansible_managed }}
+
+{% for key in users.deploy.ssh_key %}
+{{ key }}
+
+{% endfor %}
