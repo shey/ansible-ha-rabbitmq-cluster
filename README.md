@@ -13,5 +13,5 @@
 
 ### Testing
 1. Install the requirements in scripts/
-1. Run python scripts/producer.py to publish messages to the "test" queue
-1. Run python scripts/consumer.py to read messages from the "test" queue
+1. Run ```python scripts/producer.py``` to publish messages to the "test" queue
+1. Run ```python scripts/consumer.py``` to read messages from the "test" queue
